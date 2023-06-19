@@ -21,7 +21,7 @@ router.get('/test', (req, res, next) => {
       return res.status(500).send('Internal Server Error');
     }
 
-    // console.log('Redis에서 가져온 데이터:', value);
+    console.log('Redis에서 가져온 데이터:', value);
 
     res.send('Redis 데이터: ' + value);
   });
