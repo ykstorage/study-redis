@@ -1,27 +1,16 @@
-// require('dotenv').config();
 const dotenv = require('dotenv');
 dotenv.config();
-
 
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const redis = require('redis');
-
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-
-
-console.log(process.env.REDIS_USERNAME);
-console.log(process.env.REDIS_USERNAME);
-console.log(process.env.REDIS_USERNAME);
-
 var app = express();
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -51,5 +40,24 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+const RedisStore = require('connect-redis').default;
+const redisClientV4 = require('./redis');
+const session = require('express-session');
+
+// 세션 쿠키 미들웨어(redis로 session 관리)
+app.use(cookieParser(process.env.COOKIE_SECRET)); 
+const sessionOption = {
+   resave: false, 
+   saveUninitialized: true, 
+   secret: process.env.COOKIE_SECRET,
+   cookie: {
+      httpOnly: true,
+      secure: false,
+   },
+   store: new RedisStore({ client: redisClientV4, prefix: 'session:' }), // 세션 데이터를 로컬 서버 메모리가 아닌 redis db에 저장하도록 등록
+};
+app.use(session(sessionOption));
 
 module.exports = app;
